@@ -101,9 +101,13 @@ function onBatch(state: BarsState, _batch: Batch): OrderInput[] {
         pendingEntryClose = close;
         entrySeq = state.seq;
         closes.push(close);
+        // Spend all the cash, capped by the weight the caps allow (100%
+        // of equity on this competition, so the whole balance in practice).
+        const room = state.weightRoom(SYMBOL);
+        const spend = state.cash < room ? state.cash : room;
         return [{
           side: 'buy', symbol: SYMBOL,
-          notional_quote_units: state.cash,
+          notional_quote_units: spend,
           max_slippage_bps: MAX_SLIPPAGE_BPS,
         }];
       }
